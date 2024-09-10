@@ -8,13 +8,31 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
-            color: black; 
+            font-family: 'Helvetica Neue', Arial, sans-serif; /* Шрифт на всём сайте */
+            color: black; /* Цвет текста по умолчанию */
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        h1, h3 {
+            margin: 10px 0;
+        }
+
+        .center-text {
+            font-size: 24px; /* Размер текста */
+            font-weight: bold; /* Жирный шрифт */
+            text-align: center; /* Центровка текста */
         }
 
         /* Стили для тёмной темы */
         @media (prefers-color-scheme: dark) {
             body {
-                color: white; 
+                color: white; /* Белый цвет текста при тёмной теме */
             }
         }
     </style>
@@ -23,6 +41,6 @@
     <h1>Кто не убирает за собой - тот гей</h1>
     <h3>(с) джейсон стетхем</h3>
 
-    Приложение в разработке!
+    <div class="center-text">Приложение в разработке!</div>
 </body>
 </html>
