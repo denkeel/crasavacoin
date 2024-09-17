@@ -8,16 +8,16 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
         WebApp = window.Telegram.WebApp
-        WebApp.showPopup({
-                title: "Заголовок",
-                message: "Текст сообщения",
-                buttons: [
-                            { type: "close", text: "close" },
-                            { type: "destructive", text: "delete" },
-                            { type: "ok", text: "ok" }
-                         ]
-             });
-        WebApp.showAlert("BackButton clicked");
+        // WebApp.showPopup({
+        //         title: "Заголовок",
+        //         message: "Текст сообщения",
+        //         buttons: [
+        //                     { type: "close", text: "close" },
+        //                     { type: "destructive", text: "delete" },
+        //                     { type: "ok", text: "ok" }
+        //                  ]
+        //      });
+        // WebApp.showAlert("BackButton clicked");
         let BackButton = WebApp.BackButton;
         BackButton.show();
         BackButton.onClick(function() {
