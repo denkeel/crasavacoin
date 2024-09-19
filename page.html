@@ -3,9 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>PNG Sequence Animation with Scaling Effect</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #animation {
+            width: 700px;
+            height: 700px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        img {
+            width: 100%;
+            height: 100%;
+            transition: transform 0.3s cubic-bezier(.54,0,.1,.99); /* Smooth scaling */
+            /* transition: transform 0.3s ease-in-out; Smooth scaling */
+        }
+
+        /* Scale-up and scale-back keyframes */
+        .scale-up {
+            transform: scale(1.2); /* 120% scale */
+        }
+
+        .scale-back {
+            transform: scale(1); /* Back to normal scale */
+        }
+    </style>
 </head>
 <body>
-    <a href="/crasavacoin">Назад</a>
+
+<div id="animation">
+    <img id="sequence" src="0001.png" alt="Animation Frame">
+</div>
+
+<script>
+    const totalFrames = 31;
+    const stopAtFrame = 12; // Frame to stop at after the 6th click
+    let currentFrame = 1;
+    let clickCount = 0; // Tracks number of clicks
+    const animationElement = document.getElementById('sequence');
+    const frameRate = 15; // Time between frames in milliseconds
+    let isAnimating = false; // To check if an animation is already in progress
+
+    // Function to update the image source
+    function updateFrame(stopFrame) {
+        const frameString = currentFrame.toString().padStart(4, '0');
+        animationElement.src = `${frameString}.png`;
+
+        currentFrame++;
+        if (currentFrame <= stopFrame) {
+            // Schedule the next frame
+            setTimeout(() => updateFrame(stopFrame), frameRate);
+        } else {
+            isAnimating = false; // Animation ends
+            if (clickCount === 6 && stopFrame === totalFrames) {
+                // After 31 frames, restart animation and stop at frame 12
+                currentFrame = 1;
+                isAnimating = true;
+                setTimeout(() => updateFrame(stopAtFrame), frameRate);
+            } else if (clickCount === 6 && stopFrame === stopAtFrame) {
+                currentFrame = stopAtFrame; // Stay on frame 12 after 6th click completes
+            } else {
+                currentFrame = 1; // Reset to the first frame for the next animation
+            }
+
+            // Reset the scaling effect once animation finishes
+            animationElement.classList.remove('scale-up');
+            animationElement.classList.add('scale-back');
+        }
+    }
+
+    // Add click event listener to the image
+    animationElement.addEventListener('click', function() {
+        if (!isAnimating) { // Start only if no animation is in progress
+            clickCount++;
+            if (clickCount > 6) {
+                clickCount = 1; // Reset click count after the 6th click
+            }
+
+            // Apply the scaling effect
+            animationElement.classList.remove('scale-back');
+            animationElement.classList.add('scale-up');
+
+            isAnimating = true;
+            if (clickCount === 6) {
+                updateFrame(totalFrames); // On the 6th click, play from frame 1 to 31 and then 1 to 12
+            } else {
+                updateFrame(totalFrames); // On all other clicks, play full animation
+            }
+        }
+    });
+</script>
+
 </body>
 </html>
