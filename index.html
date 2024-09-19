@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PNG Sequence Animation with Preloading and Scaling</title>
+    <style>
+        body, html {
+            margin: 0;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+
+        #animation {
+            width: 70vw; /* 70% of the viewport width */
+            aspect-ratio: 1/1; /* Maintain a 1:1 square ratio */
+            max-width: 700px; /* Maximum width is 700px */
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Ensure the image fits inside the square container */
+            transition: transform 0.3s ease-in-out; /* Smooth scaling */
+        }
+
+        /* Scale-up and scale-back keyframes */
+        .scale-up {
+            transform: scale(1.2); /* 120% scale */
+        }
+
+        .scale-back {
+            transform: scale(1); /* Back to normal scale */
+        }
+
+        #loading-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .loading-icon {
+            width: 100px;
+            height: 100px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="animation">
+    <img id="sequence" src="0001.png" alt="Animation Frame">
+</div>
+
+<div id="loading-screen">
+    <!-- Loading icon placeholder -->
+    <img id="loading-icon" class="loading-icon" alt="Loading...">
+</div>
+
+<script>
+    const totalFrames = 60;
+    const stopAtFrame = 12; // Frame to stop at after the 6th click
+    let currentFrame = 1;
+    let clickCount = 0; // Tracks number of clicks
+    const animationElement = document.getElementById('sequence');
+    const loadingScreen = document.getElementById('loading-screen');
+    const loadingIcon = document.getElementById('loading-icon');
+    const frameRate = 10; // Time between frames in milliseconds
+    let isAnimating = false; // To check if an animation is already in progress
+    let imagesLoaded = false; // Track whether all images are preloaded
+
+    // Preload all images
+    const imagePaths = [];
+    const images = [];
+
+    for (let i = 1; i <= totalFrames; i++) {
+        const frameString = i.toString().padStart(4, '0');
+        imagePaths.push(`${frameString}.png`);
+    }
+
+    // Loading icons array (example URLs from open-source SVG spinners)
+    const loadingIcons = [
+        "https://samherbert.net/svg-loaders/svg-loaders/rings.svg",
+        "https://samherbert.net/svg-loaders/svg-loaders/oval.svg",
+        "https://samherbert.net/svg-loaders/svg-loaders/ball-triangle.svg"
+    ];
+
+    // Select a random loading icon
+    const randomIcon = loadingIcons[Math.floor(Math.random() * loadingIcons.length)];
+    loadingIcon.src = randomIcon; // Set random icon as the source
+
+    // Function to preload all images
+    function preloadImages(paths, callback) {
+        let loadedCount = 0;
+
+        paths.forEach((path, index) => {
+            const img = new Image();
+            img.src = path;
+            img.onload = () => {
+                loadedCount++;
+                images[index] = img; // Store the preloaded image
+                if (loadedCount === paths.length) {
+                    callback(); // All images loaded, call the callback
+                }
+            };
+            img.onerror = () => {
+                console.error(`Failed to load image: ${path}`);
+            };
+        });
+    }
+
+    // Function to update the image source
+    function updateFrame(stopFrame) {
+        const frameString = currentFrame.toString().padStart(4, '0');
+        animationElement.src = `${frameString}.png`;
+
+        currentFrame++;
+        if (currentFrame <= stopFrame) {
+            setTimeout(() => updateFrame(stopFrame), frameRate);
+        } else {
+            isAnimating = false; // Animation ends
+            if (clickCount === 6 && stopFrame === totalFrames) {
+                currentFrame = 1;
+                isAnimating = true;
+                setTimeout(() => updateFrame(stopAtFrame), frameRate);
+            } else if (clickCount === 6 && stopFrame === stopAtFrame) {
+                currentFrame = stopAtFrame; // Stay on frame 12 after 6th click completes
+            } else {
+                currentFrame = 1; // Reset to the first frame for the next animation
+            }
+
+            // Reset the scaling effect once animation finishes
+            animationElement.classList.remove('scale-up');
+            animationElement.classList.add('scale-back');
+        }
+    }
+
+    // Add click event listener to the image
+    animationElement.addEventListener('click', function() {
+        if (!isAnimating && imagesLoaded) { // Only start if no animation is in progress and images are loaded
+            clickCount++;
+            if (clickCount > 6) {
+                clickCount = 1; // Reset click count after the 6th click
+            }
+
+            // Apply the scaling effect
+            animationElement.classList.remove('scale-back');
+            animationElement.classList.add('scale-up');
+
+            isAnimating = true;
+            if (clickCount === 6) {
+                updateFrame(totalFrames); // On the 6th click, play from frame 1 to 31 and then 1 to 12
+            } else {
+                updateFrame(totalFrames); // On all other clicks, play full animation
+            }
+        }
+    });
+
+    // Preload images and hide the loading indicator when done
+    preloadImages(imagePaths, () => {
+        imagesLoaded = true;
+        loadingScreen.style.display = 'none'; // Hide loading screen after images are preloaded
+    });
+
+</script>
+
+</body>
+</html>
