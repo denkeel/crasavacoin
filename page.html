@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PNG Sequence Animation with Scaling Effect</title>
+    <title>PNG Sequence Animation with Preloading and Scaling</title>
     <style>
         body {
             display: flex;
@@ -14,19 +14,19 @@
         }
 
         #animation {
-            width: 300px;
-            height: 300px;
+            width: 55vw; /* 70% of the viewport width */
+            aspect-ratio: 1/1; /* Maintain a 1:1 square ratio */
+            max-width: 700px; /* Maximum width is still 700px */
             cursor: pointer;
             display: flex;
             justify-content: center;
             align-items: center;
         }
-
+        
         img {
             width: 100%;
             height: 100%;
-            transition: transform 0.3s cubic-bezier(.54,0,.1,.99); /* Smooth scaling */
-            /* transition: transform 0.3s ease-in-out; Smooth scaling */
+            transition: transform 0.3s ease-in-out; /* Smooth scaling */
         }
 
         /* Scale-up and scale-back keyframes */
@@ -37,22 +37,60 @@
         .scale-back {
             transform: scale(1); /* Back to normal scale */
         }
+
+        #loading {
+            position: absolute;
+            font-size: 24px;
+            color: #333;
+        }
     </style>
 </head>
 <body>
 
 <div id="animation">
     <img id="sequence" src="0001.png" alt="Animation Frame">
+    <div id="loading">Loading...</div> <!-- Loading indicator -->
 </div>
 
 <script>
     const totalFrames = 60;
-    const stopAtFrame = 23; // Frame to stop at after the 6th click
+    const stopAtFrame = 22; // Frame to stop at after the 6th click
     let currentFrame = 1;
     let clickCount = 0; // Tracks number of clicks
     const animationElement = document.getElementById('sequence');
-    const frameRate = 100; // Time between frames in milliseconds
+    const loadingElement = document.getElementById('loading');
+    const frameRate = 10; // Time between frames in milliseconds
     let isAnimating = false; // To check if an animation is already in progress
+    let imagesLoaded = false; // Track whether all images are preloaded
+
+    // Preload all images
+    const imagePaths = [];
+    const images = [];
+
+    for (let i = 1; i <= totalFrames; i++) {
+        const frameString = i.toString().padStart(4, '0');
+        imagePaths.push(`${frameString}.png`);
+    }
+
+    // Function to preload all images
+    function preloadImages(paths, callback) {
+        let loadedCount = 0;
+
+        paths.forEach((path, index) => {
+            const img = new Image();
+            img.src = path;
+            img.onload = () => {
+                loadedCount++;
+                images[index] = img; // Store the preloaded image
+                if (loadedCount === paths.length) {
+                    callback(); // All images loaded, call the callback
+                }
+            };
+            img.onerror = () => {
+                console.error(`Failed to load image: ${path}`);
+            };
+        });
+    }
 
     // Function to update the image source
     function updateFrame(stopFrame) {
@@ -61,12 +99,10 @@
 
         currentFrame++;
         if (currentFrame <= stopFrame) {
-            // Schedule the next frame
             setTimeout(() => updateFrame(stopFrame), frameRate);
         } else {
             isAnimating = false; // Animation ends
             if (clickCount === 6 && stopFrame === totalFrames) {
-                // After 31 frames, restart animation and stop at frame 12
                 currentFrame = 1;
                 isAnimating = true;
                 setTimeout(() => updateFrame(stopAtFrame), frameRate);
@@ -84,7 +120,7 @@
 
     // Add click event listener to the image
     animationElement.addEventListener('click', function() {
-        if (!isAnimating) { // Start only if no animation is in progress
+        if (!isAnimating && imagesLoaded) { // Only start if no animation is in progress and images are loaded
             clickCount++;
             if (clickCount > 6) {
                 clickCount = 1; // Reset click count after the 6th click
@@ -102,6 +138,13 @@
             }
         }
     });
+
+    // Preload images and hide the loading indicator when done
+    preloadImages(imagePaths, () => {
+        imagesLoaded = true;
+        loadingElement.style.display = 'none'; // Hide loading text after images are preloaded
+    });
+
 </script>
 
 </body>
